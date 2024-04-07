@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push and Deploy to AKS
 
 on:
   push:
@@ -10,68 +10,44 @@ env:
   AKS_RESOURCE_GROUP: myAKSResourceGroup
 
 jobs:
-  build-and-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2  # Check out the repository code.
+      - uses: actions/checkout@v2  # Check out the repository code.
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        file: ./Dockerfile
-        push: true
-        tags: harishdocker557/myapp:${{ github.run_number }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: harishdocker557/myapp:${{ github.run_number }}
 
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure login
+        uses: azure/login@v1.4.3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Set up Kubectl
-      uses: azure/setup-kubectl@v1
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
 
-    - name: Get AKS Credentials
-      run: |
-        az aks get-credentials --name ${{ env.AKS_CLUSTER_NAME }} --resource-group ${{ env.AKS_RESOURCE_GROUP }} --file $GITHUB_WORKSPACE/.kube/config --overwrite-existing
-      env:
-        KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
 
-    - name: Verify Kubeconfig File and Context
-      run: |
-        ls -l $GITHUB_WORKSPACE/.kube/config
-        echo "KUBECONFIG is set to: $KUBECONFIG"
-        cat $GITHUB_WORKSPACE/.kube/config | grep 'current-context'
-        chmod 600 $GITHUB_WORKSPACE/.kube/config
-      env:
-        KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
-
-    - name: Display and Set Kubectl Context Explicitly (Adjusted)
-      run: |
-        echo "Using KUBECONFIG at: $KUBECONFIG"
-        kubectl --kubeconfig=$KUBECONFIG config current-context
-        CONTEXT=$(kubectl --kubeconfig=$GITHUB_WORKSPACE/.kube/config config current-context)
-        if [ -z "$CONTEXT" ]; then
-          echo "Current context is not set, attempting to set it explicitly."
-          # No need to replace anything if using the correct KUBECONFIG path
-          kubectl --kubeconfig=$GITHUB_WORKSPACE/.kube/config config use-context myAKSCluster
-        else
-          echo "Current context is $CONTEXT"
-        fi
-      env:
-        KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
-
-
-    - name: Deploy to AKS
-      run: |
-        kubectl apply -f deployment.yaml
-        kubectl apply -f service.yaml
-      env:
-        KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
-        APP_ENV: 'production'  # Example non-credential environment variable
+      - name: Deploy to AKS
+        uses: Azure/k8s-deploy@v4
+        with:
+          namespace: 'default'
+          manifests: |
+            azure-vote-all-in-one-redis.yaml
+          images: '${{ secrets.REGISTRY }}.azurecr.io/${{ secrets.REPOSITORY }}/azure-vote-front:${{ github.sha }}'
+          pull-images: false
