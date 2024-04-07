@@ -8,11 +8,12 @@ on:
 env:
   AKS_CLUSTER_NAME: myAKSCluster
   AKS_RESOURCE_GROUP: myAKSResourceGroup
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2  # Check out the repository code
+    - uses: actions/checkout@v2  # Check out the repository code.
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
@@ -23,10 +24,10 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
-        context: .  # Docker build context
-        file: ./Dockerfile  # Path to your Dockerfile
-        push: true  # Enables pushing to Docker Hub
-        tags: harishdocker557/myapp:${{ github.run_number }}  # Tag image with the GitHub Actions run number
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: harishdocker557/myapp:${{ github.run_number }}
 
     - name: Login to Azure
       uses: azure/login@v1
@@ -42,18 +43,32 @@ jobs:
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
 
-    # Explicitly set the kubectl context to ensure it's targeting the correct AKS cluster
-    - name: Set Kubectl Context
+    - name: Verify Kubeconfig File and Set Permissions
+      run: |
+        ls -l $GITHUB_WORKSPACE/.kube/config
+        cat $GITHUB_WORKSPACE/.kube/config | grep 'current-context'
+        chmod 600 $GITHUB_WORKSPACE/.kube/config
+      env:
+        KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
+
+    - name: Set Kubectl Context Explicitly (If Needed)
       run: |
         CONTEXT=$(kubectl config current-context)
-        echo "Current context is $CONTEXT"
-        # Optionally, explicitly set the context if automatic setting fails
-        # kubectl config use-context your-aks-cluster-context-name
+        if [ -z "$CONTEXT" ]; then
+          echo "Current context is not set, attempting to set it explicitly."
+          # Replace <your-cluster-context-name> with the actual context name of your AKS cluster.
+          # You can find this by inspecting your kubeconfig file.
+          kubectl config use-context <your-cluster-context-name>
+        else
+          echo "Current context is $CONTEXT"
+        fi
+      env:
+        KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
 
     - name: Deploy to AKS
       run: |
-        kubectl apply -f deployment.yaml --validate=false # Consider removing --validate=false after ensuring connectivity
-        kubectl apply -f service.yaml --validate=false # Consider removing --validate=false after ensuring connectivity
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
         APP_ENV: 'production'  # Example non-credential environment variable
