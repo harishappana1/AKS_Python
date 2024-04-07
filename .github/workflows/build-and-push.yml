@@ -23,6 +23,6 @@ jobs:
         context: .  # Docker build context
         file: ./Dockerfile  # Path to your Dockerfile
         push: true  # Enables pushing to Docker Hub
-        tags: dockerhub/myapp:${{ github.run_number }}  # Tag image with the GitHub Actions run number, replace "dockerhub" with your Docker Hub username
+        tags: harishdocker557/myapp:${{ github.run_number }}  # Tag image with the GitHub Actions run number, replace "dockerhub" with your Docker Hub username
 
     # Optional: Add additional steps for deployment or testing as needed
