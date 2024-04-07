@@ -43,27 +43,30 @@ jobs:
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
 
-    - name: Verify Kubeconfig File and Set Permissions
+    - name: Verify Kubeconfig File and Context
       run: |
         ls -l $GITHUB_WORKSPACE/.kube/config
+        echo "KUBECONFIG is set to: $KUBECONFIG"
         cat $GITHUB_WORKSPACE/.kube/config | grep 'current-context'
         chmod 600 $GITHUB_WORKSPACE/.kube/config
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
 
-    - name: Set Kubectl Context Explicitly (If Needed)
+    - name: Display and Set Kubectl Context Explicitly (Adjusted)
       run: |
-        CONTEXT=$(kubectl config current-context)
+        echo "Using KUBECONFIG at: $KUBECONFIG"
+        kubectl --kubeconfig=$KUBECONFIG config current-context
+        CONTEXT=$(kubectl --kubeconfig=$GITHUB_WORKSPACE/.kube/config config current-context)
         if [ -z "$CONTEXT" ]; then
           echo "Current context is not set, attempting to set it explicitly."
-          # Replace <your-cluster-context-name> with the actual context name of your AKS cluster.
-          # You can find this by inspecting your kubeconfig file.
-          kubectl config use-context <your-cluster-context-name>
+          # No need to replace anything if using the correct KUBECONFIG path
+          kubectl --kubeconfig=$GITHUB_WORKSPACE/.kube/config config use-context myAKSCluster
         else
           echo "Current context is $CONTEXT"
         fi
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
+
 
     - name: Deploy to AKS
       run: |
