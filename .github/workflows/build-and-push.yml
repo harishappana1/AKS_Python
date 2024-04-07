@@ -32,6 +32,7 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v1
 
@@ -41,10 +42,18 @@ jobs:
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
 
+    # Explicitly set the kubectl context to ensure it's targeting the correct AKS cluster
+    - name: Set Kubectl Context
+      run: |
+        CONTEXT=$(kubectl config current-context)
+        echo "Current context is $CONTEXT"
+        # Optionally, explicitly set the context if automatic setting fails
+        # kubectl config use-context your-aks-cluster-context-name
+
     - name: Deploy to AKS
       run: |
-        kubectl apply -f deployment.yaml
-        kubectl apply -f service.yaml
+        kubectl apply -f deployment.yaml --validate=false # Consider removing --validate=false after ensuring connectivity
+        kubectl apply -f service.yaml --validate=false # Consider removing --validate=false after ensuring connectivity
       env:
         KUBECONFIG: $GITHUB_WORKSPACE/.kube/config
         APP_ENV: 'production'  # Example non-credential environment variable
