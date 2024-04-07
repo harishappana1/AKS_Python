@@ -32,14 +32,6 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-        enable-AzPSSession: false
-        environment: azurecloud
-        allow-no-subscriptions: false
-        audience: api://AzureADTokenExchange
-        auth-type: servicePrincipal
-
-
-
     - name: Set up Kubectl
       uses: azure/setup-kubectl@v1
 
