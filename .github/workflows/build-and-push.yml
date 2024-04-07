@@ -3,7 +3,7 @@ name: Build, Push and Deploy to AKS
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main  # Trigger on pushes to the main branch.
 
 env:
   AKS_CLUSTER_NAME: myAKSCluster
