@@ -8,6 +8,8 @@ on:
 env:
   AKS_CLUSTER_NAME: myAKSCluster
   AKS_RESOURCE_GROUP: myAKSResourceGroup
+  IMAGE_TAG: ${{ github.run_number }}  # Dynamically set image tag based on the GitHub run number.
+  DOCKER_IMAGE: harishdocker557/myapp  # Replace with your Docker image name.
 
 jobs:
   build-push-deploy:
@@ -27,7 +29,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: harishdocker557/myapp:${{ github.run_number }}
+          tags: ${{ env.DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
 
       - name: Azure login
         uses: azure/login@v1.4.3
@@ -43,11 +45,14 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
 
+      - name: Update Kubernetes deployment image
+        run: |
+          sed -i 's|${{ env.DOCKER_IMAGE }}:1.2.3|${{ env.DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}|g' deployment.yaml
+
       - name: Deploy to AKS
         uses: Azure/k8s-deploy@v4
         with:
           namespace: 'default'
           manifests: |
-            azure-vote-all-in-one-redis.yaml
-          images: '${{ secrets.REGISTRY }}.azurecr.io/${{ secrets.REPOSITORY }}/azure-vote-front:${{ github.sha }}'
-          pull-images: false
+            deployment.yaml
+          images: '${{ env.DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}'

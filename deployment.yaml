@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-hello-deployment # Name of the deployment
+  name: flask-hello-deployment
 spec:
-  replicas: 1 # Number of desired pods
-  selector: # Defines how to identify pods that are managed by this deployment
+  replicas: 1
+  selector:
     matchLabels:
       app: flask-hello
       tier: frontend
-  template: # Pod definition template
+  template:
     metadata:
       labels:
         app: flask-hello
@@ -16,8 +16,22 @@ spec:
     spec:
       containers:
         - name: flask-hello-container
-          image: harishdocker557/myapp:latest # Docker image to use
-          imagePullPolicy: Always # Always pull image to ensure the latest is used
-          # Add ports, environment variables, etc. here as needed
+          image: harishdocker557/myapp:1.2.3 # Placeholder tag to be replaced
+          imagePullPolicy: Always
           ports:
-            - containerPort: 5000 # Assuming Flask runs on port 5000 by default
+            - containerPort: 5000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-hello-service-nodeport
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30008
+  selector:
+    app: flask-hello
+    tier: frontend
