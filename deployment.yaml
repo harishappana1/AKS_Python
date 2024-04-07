@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-hello-deployment # name of the deployment
-
+  name: flask-hello-deployment # Name of the deployment
 spec:
-  template: # pod defintion
+  replicas: 1 # Number of desired pods
+  selector: # Defines how to identify pods that are managed by this deployment
+    matchLabels:
+      app: flask-hello
+      tier: frontend
+  template: # Pod definition template
     metadata:
-      name: flask-hello # name of the pod
       labels:
         app: flask-hello
         tier: frontend
     spec:
       containers:
-        - name: flask-hello
-          image: projectpy
-          imagePullPolicy: Never
-  replicas: 3
-  selector: # Mandatory, Select the pods which needs to be in the replicaset
-    matchLabels:
-      app: flask-hello
-      tier: frontend
+        - name: flask-hello-container
+          image: harishdocker557/myapp:latest # Docker image to use
+          imagePullPolicy: Always # Always pull image to ensure the latest is used
+          # Add ports, environment variables, etc. here as needed
+          ports:
+            - containerPort: 5000 # Assuming Flask runs on port 5000 by default
