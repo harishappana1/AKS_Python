@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: flask-hello-container
-          image: harishdocker557/myapp # Placeholder tag to be replaced
+          image: harishdocker557/myapp 
           imagePullPolicy: Always
           ports:
             - containerPort: 5000

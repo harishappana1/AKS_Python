@@ -3,13 +3,13 @@ name: Build, Push and Deploy to AKS
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch.
+      - main  
 
 env:
   AKS_CLUSTER_NAME: myAKSCluster
   AKS_RESOURCE_GROUP: myAKSResourceGroup
-  IMAGE_TAG: ${{ github.run_number }}  # Dynamically set image tag based on the GitHub run number.
-  DOCKER_IMAGE: harishdocker557/myapp  # Replace with your Docker image name.
+  IMAGE_TAG: ${{ github.run_number }}  
+  DOCKER_IMAGE: harishdocker557/myapp  
 
 jobs:
   build-push-deploy:
