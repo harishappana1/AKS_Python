@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello Dhaapps Students!!! Tomorrow is important Election date, please vote"
+    return "Hello Dhaapps Students!!! Tomorrow is important Election date, Vote for Correct person , voting starts from 7 AM"
 
 @app.route("/api/data")
 def data():
