@@ -1,5 +1,5 @@
 # for local testing in minikube
-docker build -t newproject .
+docker build -t newproject ...
 minikube start
 eval $(minikube -p minikube docker-env)
 kubectl apply -f deploymeny.yaml
