@@ -6,7 +6,7 @@ on:
       - main  
 
 env:
-  AKS_CLUSTER_NAME: myk8s
+  AKS_CLUSTER_NAME: mycluster
   AKS_RESOURCE_GROUP: newrg
   IMAGE_TAG: ${{ github.run_number }}  
   DOCKER_IMAGE: harishdocker557/myapp  
