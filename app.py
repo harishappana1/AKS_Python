@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Congrats on DevOps Course!!!!! Updated Code"
+    return "Congrats on DevOps Course!!!!! Newly Created Code"
 
 @app.route("/api/data")
 def data():
